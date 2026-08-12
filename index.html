@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registre de la Bibliothèque Arcanique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #130d09;
+    --bg-vignette: #1c130c;
+    --panel: #ece0c2;
+    --panel-shadow: #cbb98d;
+    --panel-header: #241a10;
+    --panel-header-2: #2f2114;
+    --ink: #2a2013;
+    --ink-soft: #5a4b34;
+    --gold: #c2a24d;
+    --gold-bright: #e4c876;
+    --verdigris: #4f7a72;
+    --verdigris-bright: #6ea89d;
+    --ember: #8a3324;
+    --line: rgba(42,32,19,0.18);
+    --radius: 3px;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html{ scroll-behavior: smooth; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(194,162,77,0.08), transparent 45%),
+      radial-gradient(ellipse at 100% 0%, rgba(79,122,114,0.08), transparent 50%),
+      var(--bg);
+    color: var(--panel);
+    font-family: 'Spectral', serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    position: sticky;
+    top:0;
+    z-index: 50;
+    background: linear-gradient(180deg, #17100a 0%, #150f09 85%, rgba(21,15,9,0) 100%);
+    border-bottom: 1px solid rgba(194,162,77,0.25);
+    padding: 22px clamp(16px,4vw,48px) 16px;
+    backdrop-filter: blur(6px);
+  }
+
+  .header-top{
+    display:flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  h1{
+    font-family: 'Cinzel Decorative', serif;
+    font-weight: 700;
+    font-size: clamp(20px, 2.6vw, 30px);
+    letter-spacing: 0.02em;
+    margin:0;
+    color: var(--gold-bright);
+    text-shadow: 0 0 18px rgba(194,162,77,0.25);
+  }
+
+  .subtitle{
+    font-size: 13px;
+    color: var(--verdigris-bright);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .tally{
+    text-align:right;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .tally .num{
+    font-size: clamp(22px,3vw,32px);
+    color: var(--gold-bright);
+    font-weight: 700;
+  }
+  .tally .num span{ color: rgba(228,200,118,0.45); font-weight:400; }
+  .tally .label{ font-size: 11px; letter-spacing:0.12em; text-transform:uppercase; color: var(--verdigris-bright); }
+
+  .progress-rail{
+    margin-top: 14px;
+    height: 6px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.06);
+    overflow:hidden;
+    border: 1px solid rgba(194,162,77,0.2);
+  }
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background: linear-gradient(90deg, var(--verdigris), var(--gold-bright));
+    transition: width .4s ease;
+  }
+
+  .controls{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items:center;
+    margin-top: 16px;
+  }
+
+  .search-wrap{
+    position: relative;
+    flex: 1 1 240px;
+  }
+  .search-wrap input{
+    width:100%;
+    background: rgba(236,224,194,0.06);
+    border: 1px solid rgba(194,162,77,0.3);
+    border-radius: var(--radius);
+    padding: 9px 32px 9px 32px;
+    color: var(--panel);
+    font-family: 'Spectral', serif;
+    font-size: 14px;
+  }
+  .search-wrap input::placeholder{ color: rgba(236,224,194,0.4); }
+  .search-wrap::before{
+    content: "⚲";
+    position:absolute;
+    left: 10px; top:50%;
+    transform: translateY(-50%) scaleX(-1);
+    color: var(--gold);
+    font-size: 14px;
+  }
+  .search-clear{
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: rgba(236,224,194,0.55);
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s ease, color .15s ease;
+  }
+  .search-clear.visible{ display: flex; }
+  .search-clear:hover{
+    background: rgba(194,162,77,0.2);
+    color: var(--gold-bright);
+  }
+
+  .toggle-btn, .floor-btn, .reset-btn{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 1px solid rgba(194,162,77,0.35);
+    background: rgba(194,162,77,0.06);
+    color: var(--gold-bright);
+    padding: 9px 14px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background .15s ease, transform .1s ease;
+    white-space: nowrap;
+  }
+  .toggle-btn:hover, .floor-btn:hover, .reset-btn:hover{ background: rgba(194,162,77,0.16); }
+  .toggle-btn:active, .floor-btn:active, .reset-btn:active{ transform: scale(0.97); }
+  .toggle-btn.active{
+    background: var(--gold);
+    color: #1c1002;
+    border-color: var(--gold);
+  }
+
+  .floor-group{ display:flex; gap:6px; }
+  .floor-btn.active{
+    background: var(--verdigris);
+    color: #08130f;
+    border-color: var(--verdigris);
+  }
+
+  .reset-btn{ border-color: rgba(138,51,36,0.5); color:#d99d90; }
+  .reset-btn:hover{ background: rgba(138,51,36,0.18); }
+
+  /* ---------- Layout wrapper (sidebars + main) ---------- */
+  .layout{
+    display:grid;
+    grid-template-columns: 200px 1fr 200px;
+    gap: clamp(16px, 2.4vw, 36px);
+    max-width: 1760px;
+    margin: 0 auto;
+    padding: 22px clamp(16px,3vw,32px) 0;
+    align-items: start;
+  }
+
+  .toc-side{
+    position: sticky;
+    top: calc(var(--header-h, 190px) + 16px);
+    display:flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: calc(100vh - var(--header-h, 190px) - 32px);
+    overflow-y: auto;
+    padding-bottom: 24px;
+    scrollbar-width: thin;
+  }
+  .toc-side::-webkit-scrollbar{ width:6px; }
+  .toc-side::-webkit-scrollbar-thumb{ background: rgba(194,162,77,0.3); border-radius:4px; }
+
+  .toc-side h3{
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 12.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--verdigris-bright);
+    margin: 0 0 4px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(194,162,77,0.2);
+  }
+
+  .toc-item{
+    font-family: 'Spectral', serif;
+    font-size: 12.5px;
+    line-height: 1.3;
+    color: var(--panel);
+    background: rgba(236,224,194,0.05);
+    border: 1px solid rgba(194,162,77,0.22);
+    border-radius: var(--radius);
+    padding: 6px 10px;
+    cursor: pointer;
+    display:flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    text-align:left;
+    transition: background .15s ease, border-color .15s ease, transform .1s ease;
+  }
+  .toc-item .toc-theme{ flex:1; min-width:0; }
+  .toc-item:hover{
+    background: rgba(194,162,77,0.14);
+    border-color: rgba(194,162,77,0.5);
+  }
+  .toc-item:active{ transform: scale(0.97); }
+  .toc-item .toc-code{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--gold-bright);
+    opacity: 0.85;
+    flex-shrink: 0;
+  }
+
+  @keyframes shelfFlash{
+    0%   { box-shadow: 0 10px 30px rgba(194,162,77,0.0), inset 0 0 0 1px var(--panel-shadow); }
+    25%  { box-shadow: 0 10px 40px rgba(194,162,77,0.55), inset 0 0 0 2px var(--gold-bright); }
+    100% { box-shadow: 0 10px 30px rgba(0,0,0,0.35), inset 0 0 0 1px var(--panel-shadow); }
+  }
+  .shelf.flash{ animation: shelfFlash 1.1s ease; }
+
+  /* Below this width there isn't room for two 200px rails; sidebars fold
+     above the content as horizontal wrapping pill rows instead. */
+  @media (max-width: 1180px){
+    .layout{ display:block; padding: 18px clamp(16px,4vw,48px) 0; max-width:1400px; }
+    .toc-side{ display:none; }
+  }
+
+  /* ---------- Layout ---------- */
+  main{
+    padding: 6px 0 80px;
+  }
+
+  .floor-heading{
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    margin: 36px 0 18px;
+  }
+  .floor-heading:first-child{ margin-top: 6px; }
+  .floor-heading h2{
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(16px,2vw,20px);
+    color: var(--gold-bright);
+    margin:0;
+    letter-spacing: 0.03em;
+  }
+  .floor-heading .rule{
+    flex:1;
+    height:1px;
+    background: linear-gradient(90deg, rgba(194,162,77,0.5), transparent);
+  }
+
+  .shelf-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 18px;
+  }
+
+  .shelf{
+    background: var(--panel);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35), inset 0 0 0 1px var(--panel-shadow);
+    overflow: hidden;
+    display:flex;
+    flex-direction: column;
+    transition: opacity .25s ease, transform .25s ease;
+    scroll-margin-top: calc(var(--header-h, 190px) + 14px);
+  }
+  .shelf.complete{
+    box-shadow: 0 10px 30px rgba(79,122,114,0.25), inset 0 0 0 1px var(--verdigris);
+  }
+  .shelf.fully-hidden{ display:none; }
+
+  .shelf-head{
+    background: linear-gradient(180deg, var(--panel-header-2), var(--panel-header));
+    padding: 12px 16px;
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor:pointer;
+    user-select: none;
+  }
+  .shelf-head-left{ display:flex; align-items:baseline; gap:10px; min-width:0; }
+  .shelf-code{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--gold-bright);
+    background: rgba(194,162,77,0.15);
+    border: 1px solid rgba(194,162,77,0.35);
+    border-radius: 3px;
+    padding: 2px 6px;
+    flex-shrink:0;
+  }
+  .shelf.complete .shelf-code{
+    color: #08130f;
+    background: var(--verdigris-bright);
+    border-color: var(--verdigris-bright);
+  }
+  .shelf-theme{
+    font-size: 14.5px;
+    font-weight: 600;
+    color: var(--panel);
+    overflow:hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .shelf-count{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: rgba(236,224,194,0.55);
+    flex-shrink:0;
+  }
+  .shelf.complete .shelf-count{ color: var(--verdigris-bright); }
+
+  .shelf-progress{
+    height:3px;
+    background: rgba(236,224,194,0.12);
+  }
+  .shelf-progress-fill{
+    height:100%;
+    background: linear-gradient(90deg, var(--verdigris), var(--gold-bright));
+    width:0%;
+    transition: width .3s ease;
+  }
+
+  .shelf-list{
+    list-style:none;
+    margin:0;
+    padding: 6px 6px 10px;
+    display:flex;
+    flex-direction: column;
+    flex:1;
+  }
+
+  .series-row{
+    display:flex;
+    align-items:flex-start;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--radius);
+    position: relative;
+  }
+  .series-row:hover{ background: rgba(42,32,19,0.05); }
+  .series-row.hidden-row{ display:none; }
+
+  .series-row input[type="checkbox"]{
+    appearance: none;
+    -webkit-appearance:none;
+    width: 17px;
+    height:17px;
+    margin-top: 3px;
+    border: 1.5px solid var(--ink-soft);
+    border-radius: 2px;
+    flex-shrink:0;
+    cursor:pointer;
+    position: relative;
+    background: rgba(255,255,255,0.4);
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .series-row input[type="checkbox"]:checked{
+    background: var(--verdigris);
+    border-color: var(--verdigris);
+  }
+  .series-row input[type="checkbox"]:checked::after{
+    content:"";
+    position:absolute;
+    left:5px; top:1px;
+    width:4px; height:9px;
+    border: solid #f4f0e2;
+    border-width: 0 2px 2px 0;
+    transform: rotate(40deg);
+  }
+  .series-row input[type="checkbox"]:focus-visible{
+    outline: 2px solid var(--ember);
+    outline-offset: 2px;
+  }
+
+  .series-text{ flex:1; min-width:0; }
+  .series-title{
+    font-size: 14px;
+    line-height:1.35;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .series-row.done .series-title{
+    color: var(--ink-soft);
+    text-decoration: line-through;
+    text-decoration-color: rgba(138,51,36,0.55);
+    text-decoration-thickness: 1.5px;
+  }
+
+  .vol-badge{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: var(--panel);
+    background: var(--ink);
+    padding: 2px 6px;
+    border-radius: 2px;
+    flex-shrink:0;
+    margin-top:2px;
+  }
+  .series-row.done .vol-badge{
+    background: var(--verdigris);
+  }
+
+  .stamp{
+    position:absolute;
+    right: 8px;
+    top: 4px;
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    color: var(--ember);
+    border: 1px solid var(--ember);
+    border-radius: 2px;
+    padding: 1px 5px;
+    transform: rotate(-6deg);
+    opacity: 0.75;
+    text-transform: uppercase;
+    pointer-events:none;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding: 60px 20px;
+    color: rgba(236,224,194,0.5);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+  }
+
+  footer{
+    text-align:center;
+    padding: 24px;
+    color: rgba(236,224,194,0.3);
+    font-size: 11.5px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  #backToTop{
+    position: fixed;
+    right: clamp(14px, 3vw, 28px);
+    bottom: clamp(14px, 3vw, 28px);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(194,162,77,0.45);
+    background: linear-gradient(180deg, var(--panel-header-2), var(--panel-header));
+    color: var(--gold-bright);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.45);
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease, background .15s ease;
+    z-index: 60;
+  }
+  #backToTop.visible{
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  #backToTop:hover{
+    background: rgba(194,162,77,0.22);
+  }
+  #backToTop:active{ transform: scale(0.94); }
+
+  @media (max-width: 560px){
+    .header-top{ flex-direction: row; align-items:flex-start; }
+    .tally{ text-align:right; }
+    .controls{ flex-direction: column; align-items: stretch; }
+    .floor-group{ justify-content: space-between; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <h1>Registre de la Bibliothèque Arcanique</h1>
+      <div class="subtitle">Librarian · Tidy Up the Arcane Library</div>
+    </div>
+    <div class="tally">
+      <div class="num" id="tallyNum">0<span id="tallyTotal">/400</span></div>
+      <div class="label">séries rangées</div>
+    </div>
+  </div>
+
+  <div class="progress-rail"><div class="progress-fill" id="progressFill"></div></div>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="Rechercher une série, une étagère ou un rayon…" autocomplete="off">
+      <button type="button" class="search-clear" id="searchClear" aria-label="Effacer la recherche" title="Effacer la recherche">✕</button>
+    </div>
+    <div class="floor-group">
+      <button class="floor-btn active" data-floor="all">Tout</button>
+      <button class="floor-btn" data-floor="1">Rez-de-chaussée</button>
+      <button class="floor-btn" data-floor="2">Étage</button>
+    </div>
+    <button class="toggle-btn" id="hideToggle">Masquer les séries terminées</button>
+    <button class="reset-btn" id="resetBtn">Réinitialiser</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc-side toc-left" id="tocLeftWrap" aria-label="Catégories du rez-de-chaussée">
+    <h3>Rez-de-chaussée</h3>
+    <div id="tocLeft"></div>
+  </nav>
+
+  <main id="main"></main>
+
+  <nav class="toc-side toc-right" id="tocRightWrap" aria-label="Catégories de l'étage">
+    <h3>Étage</h3>
+    <div id="tocRight"></div>
+  </nav>
+</div>
+
+<footer>Progression sauvegardée localement dans ce navigateur · Une étagère devient dorée quand toutes ses séries sont cochées</footer>
+
+<button id="backToTop" aria-label="Remonter en haut de la page" title="Remonter en haut">▲</button>
+
+<script>
+const DATA = [
+  {code:"1A", floor:1, theme:"Monsterology", series:[
+    ["The Illustrated Bestiary: Creatures of Land, Sky, and Sea",10],
+    ["Living with Monsters: A Guide to Care and Training",10],
+    ["Behavioral Patterns of Monsters",10],
+    ["Magical Creatures and Their Spells",10],
+    ["Monsterology: An Introduction to Forbidden Beast",10],
+    ["Ecological Pyramid of Monsters",10],
+    ["A Field Guide to Monsters: Identification and Survival",10],
+    ["Monsterology: Language and Vocal Patterns of Monsters",10],
+    ["A Pictorial Guide to the Ecology of Monsters",10],
+    ["Tears of the Beasts: Records of the Extinct and Forgotten",10],
+    ["Monster Field Notes: A Beastmaster's Journey",10],
+    ["The World Encyclopedia of Dragons",10]
+  ]},
+  {code:"1B", floor:1, theme:"Astrology and Divination", series:[
+    ["Prophecy of the Advent of the Great King of Terror",10],
+    ["Book of Constellations: The Thirteen Zodiac Signs That Guide Destiny",10],
+    ["Apocalypse of the Heavens, Omens and Warnings",10],
+    ["Voices of the Oracle: Revelations for the Chosen Listener",10],
+    ["One Right Guess in a Hundred Makes a Seer",10],
+    ["Prophecy by the Three Witches",10],
+    ["The Seer's Journal: Daily Visions of the Future",10],
+    ["The Abyss of Tarot: A Book of Symbols and Intuition",10],
+    ["Prophecy: Angelic Self-Writing",10],
+    ["The Art of Feng Shui: Reading Dragon Veins and Increasing Luck",10],
+    ["Animal Oracles: Prophesying Match Results",10],
+    ["The Crystal Tome: Practical Scrying and Clairvoyance",10]
+  ]},
+  {code:"1C", floor:1, theme:"Curses and Dispels", series:[
+    ["The Countercurse Compendium: Magic That Bites Back",10],
+    ["Seal and Sever: Lost Rites of Curse-Breaking",10],
+    ["The Dark Pact: The Birth of a Curse",10],
+    ["The Grand Compendium of Curses: 100 Hexes and 100 Dispells",10],
+    ["Reverse Ritual Tracing for Curse Source Identification",3],
+    ["The Book of Curses: Forgotten Plagues and Their Dispells",3],
+    ["The Death's Note",3],
+    ["Advanced Curse Analysis: Multiple Structures and Dissolution Process",3],
+    ["Curse-Breaking Arithmancy and Sealing Arts",3],
+    ["The Lexicon of Curses: Malefic Words and Their Power",3],
+    ["Breaking the Curse of the Trophyless",3],
+    ["Introduction to Malediction Systems: Taxonomy, Structure, and Mechanisms",3]
+  ]},
+  {code:"1D", floor:1, theme:"Bard and Music", series:[
+    ["A Collection of Chanted Verses: Status Buffing and Nerfing",10],
+    ["The Chronicle of World Music of Magic",10],
+    ["Spell Chanting Technique: The Blending of Sound and Spell",10],
+    ["The Dark Sonata: Music That Attracts Calamity",10],
+    ["Transcendental Magic Etudes of Execution",3],
+    ["The Bard's Book of Spells",3],
+    ["Theoretical Foundations of Enchanted Music",3],
+    ["Magical Psalms: Methodology for Compiling Chanted Poetry",3],
+    ["Theory of Chanting: Principles of Mana Amplification via Voice",3],
+    ["Chanting Methods of Resonating with Natural Entities",3],
+    ["Musical Saint: A Great Figure Who Brought Music to the Masses",3],
+    ["Witches' Hymnal",3]
+  ]},
+  {code:"1E", floor:1, theme:"Necromancy", series:[
+    ["Theory of the Nether Strata: Analysis of the Afterworld",10],
+    ["How to Command the Army of the Dead",10],
+    ["Compendium of Necromancy: The Arts of Management and Maintenance",10],
+    ["Foundations of Necromancy: On the Fixation and Severance of Souls",10],
+    ["Night Parade of One Hundred Demons",10],
+    ["Ritual Design Guidelines for the Practicing Necromancer",10],
+    ["A Technique to Turn Wandering Ghosts into Servants",10],
+    ["Necrodefense Compendium: Dealing with Hauntings",10],
+    ["Compendium of Necromancy: The Beginner's Guide",10],
+    ["Practical Necromancy: Skeleton Edition",10],
+    ["Zombie: The Secret Rituals for Domination",10],
+    ["Rituals of Calling and Commanding the Dead",10]
+  ]},
+  {code:"1F", floor:1, theme:"Transfiguration", series:[
+    ["Introduction to Inanimate Transfiguration",10],
+    ["Humanization: A Transformation Guide for Non-Humans",10],
+    ["The Codex of Transfiguration: Detection and Nullification",10],
+    ["Complete Practical Transfiguration: Phases and Sustaining Techniques",10],
+    ["Mastery of Mimicry: Theory and Practice of Visual Imitation",10],
+    ["Introduction to the Theory of Transfiguration",10],
+    ["Reducing Metamorphosis Time: How to Minimize Vulnerability",10],
+    ["Magical Physiology of Therianthropy",10],
+    ["Correlation of Transformation Duration and Mana Depletion",10],
+    ["Preservation of Mental Identity in Therianthropic Spells",10],
+    ["Foundations of Transformation: Object Alteration and Reassembly",10],
+    ["Beastification and the Threshold of Madness",10]
+  ]},
+  {code:"1G", floor:1, theme:"Magical Artifacts and Enchanting", series:[
+    ["The Grand Encyclopedia of Magical Artifacts",10],
+    ["Practical Enchantment: Offense and Defense Enhancement",10],
+    ["Magical Item's Workshop Series",10],
+    ["Foundations of Magical Item Crafting and Materials",10],
+    ["The Inverse Law of High Grade Armor and Fabric Coverage",3],
+    ["Compendium of Forbidden Relics",3],
+    ["Crystal Catalog: Elemental Properties and Enchantment Mastery",3],
+    ["Forging Magical Items",3],
+    ["Repair and Returning of Enchanted Gear",3],
+    ["Introduction to Enchantment Theory",3],
+    ["The Magic Ring That Steals Reason",3],
+    ["Artifacts That Change The World",3]
+  ]},
+  {code:"1H", floor:1, theme:"Stealth", series:[
+    ["Codex of the Stealth Arts",10],
+    ["Stealth Techniques: Concealment Among Nearby Objects",10],
+    ["Hide vs Seek: Magical Warfare of Stealth and Detection",10],
+    ["Complete Guide to Stealth Magic",10],
+    ["The Art of Hiding One's Presence",3],
+    ["The Art of Shadow Walking",3],
+    ["Introduction to Stealth Magic: The Art of Shadowing",3],
+    ["Stealth Arts: Techniques to Becoming Air",3],
+    ["The Book of Ninja: Lurking in the Darkness",3],
+    ["Shadowmages: Shadow Cloning and Teleportation",3],
+    ["Tactics of the Bucket: Vision-Sealing Theft",3],
+    ["Foundations and Applications of Invisibility Magic",3]
+  ]},
+  {code:"1I", floor:1, theme:"Illusion Magic", series:[
+    ["The Illusory Art: Sovereignty over the Five Senses",10],
+    ["The Infinite Hall: Creating Inescapable Illusory Spaces",10],
+    ["Chronostatic Illusions: Manipulating the Perception of Time",10],
+    ["Terror Illusions: Spells to Shatter the Enemy's Mind",10],
+    ["The Art of Illusion Defense: Mental Defences and Protection of the Five Senses",10],
+    ["Introduction to Illusion Magic: Truths of the Imaginary",10],
+    ["The Grand Compendium of Illusion Magic",10],
+    ["Illusion Magic: The Art of Hypnosis",10],
+    ["Where Illusion Ends and Reality Begins",10],
+    ["Crafting Visual and Auditory Illusions",10],
+    ["Enchanting Illusions: Seduction Magic",10],
+    ["The Ultimate Illusion: Mirror Flower, Water Moon",10]
+  ]},
+  {code:"1J", floor:1, theme:"Summoning Magic", series:[
+    ["Theory and Practice of Hero Summoning from Another World",10],
+    ["A Beginner's Guide: Summoning the Useless Goddess",10],
+    ["Introduction to Summoning: Fundamentals of Otherworldly Contracts",10],
+    ["Summoning and Controlling Catastrophic Entities",10],
+    ["Summoning Magic for Beginners",10],
+    ["Magic Circles and Summoning Syntax Explained",10],
+    ["Trans-Temporal Summons and the Law of Causality",10],
+    ["Divine Dragon Summoning: Descent of Bahamut",10],
+    ["The Book of Summoning and Contracts",10],
+    ["Encyclopedia of 10,000 Summons: The Complete Collection from Heaven to the Abyss",10],
+    ["Succubus Summoning Techniques and Practical Applications",10],
+    ["The Complete Summoning Grimoire",10]
+  ]},
+  {code:"1K", floor:1, theme:"Healer and Healing Magic", series:[
+    ["Introduction to Magical Healing",10],
+    ["The Four Principles of the Healer's Ethics",10],
+    ["Spells for Curing Poisons and Diseases",10],
+    ["Healing Magic for the Reclamation of Mind and Consciousness",10],
+    ["Fundamentals of Healing and Mana Control",10],
+    ["Advanced Healing Theory: Maintaining Vigor Until Daybreak",10],
+    ["The Grand Compendium of Healing Magic",10],
+    [`No More "Healer Diff": A Comprehensive Guide`,10]
+  ]},
+  {code:"1L", floor:1, theme:"Holy Magic", series:[
+    ["Selection and Application of Targets for Holy Magic",10],
+    ["Formation and Maintenance of Large Sacred Barriers",10],
+    ["Holy Magic: Undead Protection and Purification",10],
+    ["Prolegomena to Holy Magic Theory",10],
+    ["Compendium of Sacred Purification Magic",10],
+    ["Fundamentals of Holy Power in Undead Annihilation",10],
+    ["Theological Research on Holy Magic",10],
+    ["Spells of Holy Light for Concealing Vital Areas",10]
+  ]},
+  {code:"1M", floor:1, theme:"Destruction Magic", series:[
+    ["Book of Spells: Water - Novice",10],
+    ["Book of Spells: Wind - Novice",10],
+    ["Book of Spells: Fire - Novice",10],
+    ["Book of Spells: Earth - Novice",10],
+    ["Book of Spells: Ice - Adept",10],
+    ["Book of Spells: Thunder - Adept",10],
+    ["Book of Spells: Shadow - Adept",10],
+    ["Book of Spells: Light - Adept",10],
+    ["Book of Spells: Dimension Rift - Expert",10],
+    ["Book of Spells: Fluid - Expert",10],
+    ["Book of Spells: Forest Creation - Expert",10],
+    ["Book of Spells: Pulverization - Expert",10],
+    ["Book of Spells: Space - Legendary",5],
+    ["Book of Spells: Explosion - Legendary",5],
+    ["Book of Spells: Time - Legendary",5],
+    ["Book of Spells: Energy - Legendary",5],
+    ["Book of Spells: Gravitation - Master",5],
+    ["Book of Spells: Matter Creation - Master",5],
+    ["Book of Spells: Abyss - Master",5],
+    ["Book of Spells: Psychokinesis - Master",5]
+  ]},
+  {code:"1N", floor:1, theme:"Alchemy and Potion-Making", series:[
+    ["The Alchemist's Field Guide: Natural Materials and Foraging",10],
+    ["The Alchemist's Encyclopedia: Categories and Efficacy of Ingredients",10],
+    ["Forbidden Alchemy: The Guide to Toxin Brewing and Disposal",10],
+    ["Alchemy Codex: An Introduction to Herbology",10],
+    ["Books of Alchemy: The Laws and Taboos of Chimera Synthesis",10],
+    ["Books of Alchemy: The Little Herbology of the Faefolk",10],
+    ["Books of Alchemy: The Ultimate Secret of the Philosopher's Stone",10],
+    ["Books of Alchemy: Homunculus - Chronicle of the Forbidden Creation",10],
+    ["Books of Alchemy: A Practical Guide to Potion Crafting",10],
+    ["Books of Alchemy: Potion Safety and Storage Manual",10],
+    ["Books of Alchemy: Practical Extraction of High-Purity Essences",10],
+    ["Books of Alchemy: Encyclopedia of World Potions",10],
+    ["Tomes of Alchemy: Alchemical Tools and Laboratory Apparatus",5],
+    ["Tomes of Alchemy: Beginner Manual of Alchemical Synthesis",5],
+    ["Tomes of Alchemy: Complete Theory of Elemental Transmutation",5],
+    ["Tomes of Alchemy: The Great Compendium of Synthesis Recipes",5],
+    ["Tomes of Alchemy: Alchemical Safety Manual Handling Hazardous Materials",5],
+    ["Tomes of Alchemy: The Alchemical Art of Transmuting Food to Poop",5],
+    ["Tomes of Alchemy: A Beginner's Guide to Modern Synthesis",5],
+    ["Tomes of Alchemy: A Grimoire of Elemental Fusion and Fission",5]
+  ]},
+  {code:"2A", floor:2, theme:"Warrior", series:[
+    ["The Supreme Creed: The Naked Warrior",10],
+    ["Mind Like Still Water: The Zen of Perfect Parrying",10],
+    ["The Weapon Compendium: Use of Swords, Axes and Spears",10],
+    ["Armor and Muscle: Synergy Between Body and Steel",10],
+    ["Scion of the Axe God: Strongest Warrior Chosen by the Sun",10],
+    ["Battlefield Logic: A Tactical Guide for Warriors",10],
+    ["Sword Saint: The One Who Sliced the Mountains",10],
+    ["Warrior's Foundation: Between Blade and Spell",10],
+    ["The Warrior's Creed: Only Cowards Become Long-Range Mages",10],
+    ["Blade: Dimension Slash Combat Technique",10],
+    ["Heretic Blade Arts: Three Sword Style",10],
+    ["The Dark Berserker and the Greatsword",10]
+  ]},
+  {code:"2B", floor:2, theme:"Archery", series:[
+    ["Applied Archery Tactics: Arrows of Stillness and Motion",10],
+    ["Anatomy of the Bow and Arrow",10],
+    ["The Grand Compendium of Archery",10],
+    ["The Hunter's Archery Manual",10],
+    ["Forging and Using Magical Bows",10],
+    ["From Longbow to Shortbow: Tactical Applications",10],
+    ["The Fundamentals of Archery: Spirit and Skill",10],
+    ["Arrow of the Shattered Knee",10],
+    ["The Book of Arcane Bows: Magic Infused Arrows",10],
+    ["Stellar Archery: Resonance of Stars and Arrows",10],
+    ["Archers of the Fairies Pact",10],
+    ["The Art of the Arrow Series",10]
+  ]},
+  {code:"2C", floor:2, theme:"Daily Magic", series:[
+    ["Minor Repairs: Practical Everyday Magic",10],
+    ["Magic Techniques to Boost Household Efficiency",10],
+    ["1000 Easy Spells to Use at Home",10],
+    ["A Compendium of Useless Magic from Around the World",10],
+    ["The Complete Guide to Everyday Magic: Simple Life Enchantments",10],
+    ["Introduction to LifeHack Magic",10],
+    ["Storage Magic: Different Dimension Pocket",3],
+    ["What Kind of Magic Works Best for Job Hunting?",3],
+    ["Handy Kitchen Magic Recipes",3],
+    ["Home Magic: Spells to Protect and Nurture Your Dwelling",3],
+    ["Three Seconds to Office: Magic for Last-Minute Commuters",3],
+    ["Magic to Mute a Specific Person's Voice",3],
+    ["Magic to Speak and Convey",3],
+    ["How to Commute with Magic",3],
+    ["Broom Handling Techniques: The Art of Aerial Travel",3],
+    ["Compendium Magic for the Lazy",3],
+    ["Spoiler Prevention Magic",3],
+    ["Everyday Magic for Deep and Restful Sleep",3]
+  ]},
+  {code:"2D", floor:2, theme:"Mathematics", series:[
+    ["Easy Math! Magical Representation Theory for a 3-Year Old",10],
+    ["Theory of Everything: Grasping Beautiful Theory through Equations",10],
+    ["Mana Measurement and Conversion Equations",10],
+    ["Structural Analysis of Sorcerous Equations",10],
+    ["The Mathematical Geometry of Magic Circles",10],
+    ["Introduction to Sorcery Mathematics",10],
+    ["Prophecy and Probability Theory",3],
+    ["Mass-Mana Equivalence",3],
+    ["Genesis Theory: An Interpretation via Imaginary Numbers",3],
+    ["Mathematical Methods for Constructing Magic Circles",3],
+    ["Magical Analysis Based on the Application of Infinite Series",3],
+    ["Prime Equation: The Absolute Order Hidden Behind Irregularity",3],
+    ["Arcane Glyphs and Pattern Theory",3],
+    ["Vector Space Theory of Magic",3],
+    ["Temporal Magic and Chaos Theory",3],
+    ["The Law of Equivalent Exchange",3],
+    ["Spatial Distribution of Mana Density and Its Fluctuation Characteristics",3],
+    ["Quantification of Cursed Power and Constraint Conditions",3]
+  ]},
+  {code:"2E", floor:2, theme:"Art", series:[
+    ["Process: Sublimating Brain Fragments into Works",10],
+    ["Art Collection That No One Can Understand",10],
+    ["Introduction to Magical Art",10],
+    ["Living Paintings: Creating and Controlling Animated Magical Art",10],
+    ["How to Change Drawn Art into Reality",10],
+    ["Perfect Lines and Circles: The Secret to Drawing in One Stroke",10],
+    ["Art is Sublime Because It Has No Answer",10],
+    ["Drawing Moving Characters: Beginner Level",10],
+    ["Puppet Crafting: An Introductory Guide to Automata and Statues",10],
+    ["Art and Magic Circles: Definitions and Differences",10],
+    ["Techniques for Returning a Drawing to a Previous Step",10],
+    ["Memory Transfer: The Technique of Direct Scene Depiction from your Brain",10]
+  ]},
+  {code:"2F", floor:2, theme:"Management", series:[
+    ["Conflict Protocols for Guilds",10],
+    ["Managing Diverse and Cross-Race Adventurer Parties",10],
+    ["Organizational Discipline: How Small Cracks Lead to Great Ruin",10],
+    ["Research of Adventurer Party Tactics Series",10],
+    ["Systems for Nurturing and Promotions in Guilds",10],
+    ["Guild Treasury and Reward System Management",10],
+    ["Magical Supply Chain Management",10],
+    ["Licensing and Regulation of Magic Users",10],
+    ["Management: Mana Resource Allocation and Optimization",10],
+    ["Management: High-Ranking Magician Training and Evaluation System",10],
+    ["Management: Tactical Command of Magical Forces",10],
+    ["Management: Administration of Magical Institutions",10]
+  ]},
+  {code:"2G", floor:2, theme:"Economics", series:[
+    ["Introduction to Arcane Market Systems",10],
+    ["Arcane Economy Report: Regional Mana Market Analysis",10],
+    ["Magic and Value: Arcane Resource Valuations",10],
+    ["Economics: Wage Structures in the Magical Professions",10],
+    ["Mana Currency Systems and Their Evolution",10],
+    ["An Introduction to Magical Economics",10],
+    ["Economics: The Revolution in Logistics Through Teleportation",3],
+    ["Alchemy and Inflation: The Gold Collapse",3],
+    ["Why Do Stocks Crash the Moment I Buy Them?",3],
+    ["The Complete Works of Magical Economics",3],
+    ["Studies in Arcane Fiscal Theory",3],
+    ["Economics: Where Did the Taxes Go?",3],
+    ["The Arcane Black Market and Price Manipulation",3],
+    ["Financial: The Art of the Tariff",3],
+    ["Economics: The Lost Three Decades",3],
+    ["History of Demonic Financial Hegemony",3],
+    ["Economics: Supply and Trade of Arcane Resources",3],
+    ["Spell Patents and IP Rights",3]
+  ]},
+  {code:"2H", floor:2, theme:"Sociology", series:[
+    ["Labor Studies: Even with Magic, Overtime Never Ends",10],
+    ["Career Opportunity: Graduated from Magic University... Got Zero Job Offers",10],
+    ["Job Inequality: Low Salary even as a Licensed Sage",10],
+    ["Interracial Social Dynamics",10],
+    ["Work Culture: The Mage Who Changed Jobs to a Sweatshop",10],
+    ["The Influence of Short-Lived Cultures on Long-Lived Species",10],
+    ["The Rift in Values Between Different Species with Differing Lifespans",3],
+    ["The Labor Reality of Mages: Unpaid and Unprotected Interns",3],
+    ["The Structure of Power Monopolization Tendencies by Long-Lived Species",3],
+    ["Wage Gaps: Universal Mana Income for Mages Now!",3],
+    [`"Low Mana" a Form of Discrimination?`,3],
+    ["Marriage Is a Contract Spell: Advanced Disenchantment is required for Divorce",3],
+    ["Sociology: Mage Pension System on the Brink of Collapse",3],
+    ["A Media Society Manipulated by Magic",3],
+    ["How to Survive a Mana-Disparity Society",3],
+    ["Labor Studies: Where are the Workplaces to Apply Your University-Learned Magic?",3],
+    ["Mana and Labor: Sociology of Magical Economies",3],
+    ["Social Structures of Magical Civilizations",3]
+  ]},
+  {code:"2I", floor:2, theme:"Psychology", series:[
+    ["A Diary of the Change in the State of the Mind-Reading Girl",10],
+    [`A Psychologist's Definition of "Happiness": The Cutting Edge of Happiness Research`,10],
+    ["The Psychology: Powerlessness and Responsibility Shifting",10],
+    ["The Psychology of Backseat Gaming",10],
+    ["Introduction to Psychological Principles and Analysis",10],
+    ["The Psychology of Using Strong Language from a Safe Zone",10],
+    ["Psychology: Mentality That the Weak Bark the Most",10],
+    ["Mind Reading: Detecting Lies through Facial Expressions and Gestures",10],
+    ["Effort Builds Confidence, and Confidence Leads to Action",10],
+    ["The Psychology of Prioritizing Gaming Over Tidying Your Room",10],
+    ["The Correlation of Magic and Emotion",10],
+    ["Ultimate Choice: Curry flavoured Poop, or Poop flavoured Curry?",10]
+  ]},
+  {code:"2J", floor:2, theme:"Philosophy", series:[
+    ["Philosophy of Science: Methodology and Truth",10],
+    ["Philosophy of Self and Other",10],
+    ["Soul, Mind, and Body: Are They Truly Distinct",10],
+    ["Philosophy: Power and Ethics",10],
+    ["Philosophy of Mana and Willpower",10],
+    ["Fantasy or Reality? The Ontological Problem of World",10],
+    ["Ethics of Magic: Responsibility and Restraint",10],
+    ["Teachings of the Great Philosophers of Magic",10],
+    ["Philosophical Studies in Magic",10],
+    ["Foundations of Metaphysics",10],
+    ["Introduction to Magical Determinism: Spell-Causality and the Philosophy",10],
+    ["I think, therefore I am",10]
+  ]},
+  {code:"2K", floor:2, theme:"Jurisprudence", series:[
+    ["Grand Compendium of Magic Jurisprudence",10],
+    ["The System and Precedents of the Arcane Court",10],
+    ["The Constitution of the Kingdom",10],
+    ["Chronicles of the Magical Court",10],
+    ["Law: Foundations of Contemporary Magical Jurisprudence",10],
+    ["Codex of Truth Verification",10],
+    ["Comparative Study of National Magic Laws",3],
+    ["Legal Treatment of Forbidden Magic",3],
+    ["Monster Hunting Law: List of Prohibited Species and Regulation of Attack Methods",3],
+    ["Contract Law: How to Write Adventurer Contracts",3],
+    ["Civil Liability Within Adventuring Parties",3],
+    ["Legality and Regulation of Magic Use",3],
+    ["Legal System for Magical Accidents and Accountability",3],
+    ["Magical Detective Law: Punishment Act for the Use of Unapproved and Unregistered Spell",3],
+    ["Guild Charter: Guild Discipline and Expulsion Systems",3],
+    ["The Idea of Equality Under the Law Is Laughable",3],
+    ["The Legalities of Party Disbandment: Property Distribution and Liability",3],
+    ["Compendium of Magical Civil Law: Definition of Personhood, Rights and Succession",3]
+  ]},
+  {code:"2L", floor:2, theme:"Romance Novels", series:[
+    ["Romance Novel: A Pact Beneath the Stars",10],
+    ["Romance Novel: The Fire King and the Ice Queen",10],
+    ["Romance Novel: Senior and the Beast",10],
+    ["Romance Novel: Whispers of the Moon",10],
+    ["A Midsummer Night's Sweet Dream",10],
+    ["A Kiss Wrought in Spells",10],
+    ["True Love between A 20-Year-Old Lady and an 80-Year-Old Tycoon",3],
+    ["30 year old Wizard's First Love",3],
+    ["The Witch and the Accidental Love Potion",3],
+    ["The Strongest Archmage is Obsessed with Me, the Girl with Zero Magic!",3],
+    ["Cursed to Love You",3],
+    ["Roses Are Red, Violets Are Blue",3],
+    ["Fill The Solitude of My Millennium with Your Ninety Years",3],
+    ["Romance Novel: The Red Lady and the Bamboozled Men",3],
+    ["Romance Novel: The Chicken and The Cat",3],
+    ["Romance Novel: My Massive Golden Balls",3],
+    ["Romance Novel: Lies More Beautiful Than Truth",3],
+    ["Romance Novel: The Thorn Prince",3]
+  ]},
+  {code:"2M", floor:2, theme:"Mystery Novels", series:[
+    ["The Arcane Detective Files",10],
+    ["Detective the Reaper",10],
+    ["Mystery Fiction: The Bloodstained Astrologer",10],
+    ["Mystery Fiction: The Prospero Code",10],
+    ["Mystery Fiction: One Who Looks into the Abyss",5],
+    ["Mystery Fiction: The Pirate Captain Who Stepped Down from His Ship",5],
+    ["Mystery Fiction: Judgment of the Spectral Tribunal",5],
+    ["Mystery Fiction: Magical Theorist Maris",5]
+  ]},
+  {code:"2N", floor:2, theme:"History", series:[
+    ["Studies in the History of Magical Civilizations",10],
+    ["The Genesis of Magic and the Evolution of Civilization",10],
+    ["Origins of Magic: Awakening of the First Spells and Magic Power",10],
+    ["The Transition and Evolutionary History of Magic",10],
+    ["Record of the Demon King's Subjugation: The Archmage's Conquest",5],
+    ["The History of World Exploration and the Discovery of Lost Continents",5],
+    ["Ancient Manuscript Studies on Mage Birth",5],
+    ["History and Tactics of Magical Warfare",5]
+  ]},
+  {code:"2O", floor:2, theme:"The Travels of Otherworld", series:[
+    ["The Cursed Workplaces of a Magicless World",10],
+    [`They Call Their Mana "Dark Energy"`,10],
+    ["A People Enchanted by Glowing Slabs",10],
+    ["The Curious Daily Life in a World Without Magic",10],
+    ["The Ultimate Guide to Otherworldly Swear Words",5],
+    ["Otherworld Chronicles: A World Ruled by Data",5],
+    ["They Worship an Invisible Entity Known as Wi-Fi",5],
+    ["The Otherworld: Demanding Fresh Graduates with 10 Years of Experience",5],
+    [`The "Internet": The All-Knowing Grimoire`,5],
+    ["Strange Technology from Another World! The Ultimate Language: C++",5],
+    ["A World Without a Demon Lord, Yet Full of Corporate Slaves",5],
+    ["In the Otherworld, Money is the Ultimate Magic",5]
+  ]},
+  {code:"2P", floor:2, theme:"Dungeons", series:[
+    ["Compendium of Dungeon Resources",10],
+    ["Dungeon of the Abyss",10],
+    ["Bestiary Components: Dungeon Creatures",10],
+    ["Fundamentals of Dungeon Architecture",10],
+    ["Gourmet Expeditions in the Dungeon",5],
+    ["Practical Dungeon Tactics",5],
+    ["The Daily Dungeon Notes of the Party Chronicler",5],
+    ["Optimization Theory of Dungeon Routes",5]
+  ]},
+  {code:"2Q", floor:2, theme:"Language", series:[
+    ["Everyone's Fairy Tongue: Tiny and Lovely Words",10],
+    ["Everyone's Demonic: Words of Covenant and Power",10],
+    ["Everyone's Elvish: The Graceful Speech of the Forest",10],
+    ["Everyone's Dwarvish: The Craftsman's Language",10],
+    ["Inter-Species Communication",5],
+    ["The Language of Draconic: Roars of Ancient Wisdom and Primal Power",5],
+    ["How Did the First Language Emerge? The Origins of Language Evolution",5],
+    ["The Birth of Magical Languages: Secrets of Spells and Ancient Speech",5]
+  ]}
+];
+
+const STORAGE_KEY = "librarian-progress-v1";
+let state = {};
+try{ state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }catch(e){ state = {}; }
+
+const HIDE_PREF_KEY = "librarian-hide-completed-v1";
+let hideCompleted = false;
+try{ hideCompleted = JSON.parse(localStorage.getItem(HIDE_PREF_KEY)) || false; }catch(e){ hideCompleted = false; }
+
+let floorFilter = "all";
+let searchTerm = "";
+
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function saveHidePref(){
+  localStorage.setItem(HIDE_PREF_KEY, JSON.stringify(hideCompleted));
+}
+
+function seriesKey(shelfCode, title){
+  return shelfCode + "::" + title;
+}
+
+function totalSeriesCount(){
+  return DATA.reduce((acc,s) => acc + s.series.length, 0);
+}
+
+function render(){
+  const main = document.getElementById('main');
+  main.innerHTML = "";
+
+  const floors = [1,2];
+  const floorNames = {1:"Rez-de-chaussée", 2:"Étage"};
+  let anyVisible = false;
+
+  floors.forEach(floorNum => {
+    if(floorFilter !== "all" && String(floorFilter) !== String(floorNum)) return;
+
+    const shelvesForFloor = DATA.filter(s => s.floor === floorNum);
+
+    const heading = document.createElement('div');
+    heading.className = 'floor-heading';
+    heading.innerHTML = `<h2>${floorNames[floorNum]}</h2><div class="rule"></div>`;
+
+    const grid = document.createElement('div');
+    grid.className = 'shelf-grid';
+
+    let floorHasVisible = false;
+
+    shelvesForFloor.forEach(shelf => {
+      const term = searchTerm.trim().toLowerCase();
+      const matchingSeries = shelf.series
+        .filter(([title]) => {
+          if(!term) return true;
+          return title.toLowerCase().includes(term) ||
+                 shelf.theme.toLowerCase().includes(term) ||
+                 shelf.code.toLowerCase().includes(term);
+        })
+        .slice()
+        .sort((a, b) => a[0].localeCompare(b[0], 'fr', { sensitivity: 'base' }));
+
+      if(term && matchingSeries.length === 0) return;
+
+      const total = shelf.series.length;
+      const doneCount = shelf.series.filter(([title]) => state[seriesKey(shelf.code,title)]).length;
+      const isComplete = doneCount === total;
+
+      const visibleRows = matchingSeries.filter(([title]) => {
+        const isDone = !!state[seriesKey(shelf.code,title)];
+        return !(hideCompleted && isDone);
+      });
+
+      if(visibleRows.length === 0 && !(term === "" && !hideCompleted)){
+        if(hideCompleted && visibleRows.length === 0) {
+          // shelf fully hidden when all remaining matching rows are done
+        }
+      }
+
+      const shelfEl = document.createElement('div');
+      shelfEl.id = 'shelf-' + shelf.code;
+      shelfEl.className = 'shelf' + (isComplete ? ' complete' : '');
+      if(hideCompleted && visibleRows.length === 0){
+        shelfEl.classList.add('fully-hidden');
+      } else {
+        floorHasVisible = true;
+        anyVisible = true;
+      }
+
+      const head = document.createElement('div');
+      head.className = 'shelf-head';
+      head.innerHTML = `
+        <div class="shelf-head-left">
+          <span class="shelf-code">${shelf.code}</span>
+          <span class="shelf-theme">${shelf.theme}</span>
+        </div>
+        <span class="shelf-count">${doneCount}/${total}${isComplete ? ' ✦' : ''}</span>
+      `;
+
+      const progressBar = document.createElement('div');
+      progressBar.className = 'shelf-progress';
+      const progressFill = document.createElement('div');
+      progressFill.className = 'shelf-progress-fill';
+      progressFill.style.width = (total ? (doneCount/total*100) : 0) + '%';
+      progressBar.appendChild(progressFill);
+
+      const list = document.createElement('ul');
+      list.className = 'shelf-list';
+
+      matchingSeries.forEach(([title, volumes]) => {
+        const key = seriesKey(shelf.code, title);
+        const isDone = !!state[key];
+        if(hideCompleted && isDone) return;
+
+        const li = document.createElement('li');
+        li.className = 'series-row' + (isDone ? ' done' : '');
+
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = isDone;
+        cb.id = 'cb-' + key.replace(/[^a-zA-Z0-9]/g,'-');
+        cb.addEventListener('change', () => {
+          state[key] = cb.checked;
+          saveState();
+          render();
+        });
+
+        const textWrap = document.createElement('div');
+        textWrap.className = 'series-text';
+        const label = document.createElement('label');
+        label.className = 'series-title';
+        label.setAttribute('for', cb.id);
+        label.textContent = title;
+        textWrap.appendChild(label);
+
+        const badge = document.createElement('span');
+        badge.className = 'vol-badge';
+        badge.textContent = volumes + 't';
+
+        li.appendChild(cb);
+        li.appendChild(textWrap);
+        li.appendChild(badge);
+        list.appendChild(li);
+      });
+
+      shelfEl.appendChild(head);
+      shelfEl.appendChild(progressBar);
+      shelfEl.appendChild(list);
+
+      head.addEventListener('click', (e) => {
+        if(e.target.tagName === 'INPUT') return;
+        list.style.display = (list.style.display === 'none') ? '' : 'none';
+        progressBar.style.display = (progressBar.style.display === 'none') ? '' : 'none';
+      });
+
+      grid.appendChild(shelfEl);
+    });
+
+    if(shelvesForFloor.some(s => {
+      const term = searchTerm.trim().toLowerCase();
+      const matches = s.series.filter(([title]) => !term || title.toLowerCase().includes(term) || s.theme.toLowerCase().includes(term) || s.code.toLowerCase().includes(term));
+      return matches.length > 0;
+    })){
+      main.appendChild(heading);
+      main.appendChild(grid);
+    }
+  });
+
+  if(!anyVisible){
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.textContent = searchTerm ? "Aucune série ne correspond à votre recherche." : "Toutes les séries visibles sont terminées. Bibliothèque rangée !";
+    main.appendChild(empty);
+  }
+
+  updateTally();
+}
+
+function updateTally(){
+  const total = totalSeriesCount();
+  let done = 0;
+  DATA.forEach(shelf => shelf.series.forEach(([title]) => {
+    if(state[seriesKey(shelf.code,title)]) done++;
+  }));
+  document.getElementById('tallyNum').firstChild.textContent = done;
+  document.getElementById('progressFill').style.width = (done/total*100) + '%';
+}
+
+document.getElementById('hideToggle').addEventListener('click', function(){
+  hideCompleted = !hideCompleted;
+  this.classList.toggle('active', hideCompleted);
+  this.textContent = hideCompleted ? "Afficher toutes les séries" : "Masquer les séries terminées";
+  saveHidePref();
+  render();
+});
+
+(function syncHideToggleButton(){
+  const btn = document.getElementById('hideToggle');
+  btn.classList.toggle('active', hideCompleted);
+  btn.textContent = hideCompleted ? "Afficher toutes les séries" : "Masquer les séries terminées";
+})();
+
+document.querySelectorAll('.floor-btn').forEach(btn => {
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.floor-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    floorFilter = this.dataset.floor;
+    render();
+  });
+});
+
+const searchInputEl = document.getElementById('searchInput');
+const searchClearBtn = document.getElementById('searchClear');
+
+function updateSearchClearVisibility(){
+  searchClearBtn.classList.toggle('visible', searchTerm.length > 0);
+}
+
+searchInputEl.addEventListener('input', function(){
+  searchTerm = this.value;
+  updateSearchClearVisibility();
+  render();
+});
+
+searchClearBtn.addEventListener('click', function(){
+  searchTerm = "";
+  searchInputEl.value = "";
+  updateSearchClearVisibility();
+  searchInputEl.focus();
+  render();
+});
+
+updateSearchClearVisibility();
+
+document.getElementById('resetBtn').addEventListener('click', function(){
+  if(confirm("Réinitialiser toute la progression ? Cette action est irréversible.")){
+    state = {};
+    saveState();
+    render();
+  }
+});
+
+function buildToc(){
+  const left = document.getElementById('tocLeft');
+  const right = document.getElementById('tocRight');
+  left.innerHTML = "";
+  right.innerHTML = "";
+
+  DATA.forEach(shelf => {
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'toc-item';
+    item.innerHTML = `<span class="toc-code">${shelf.code}</span><span class="toc-theme">${shelf.theme}</span>`;
+    item.addEventListener('click', () => goToShelf(shelf.code));
+    (shelf.floor === 1 ? left : right).appendChild(item);
+  });
+}
+
+function goToShelf(code){
+  // Navigate directly to the shelf without applying any search/filter.
+  searchTerm = "";
+  document.getElementById('searchInput').value = "";
+  updateSearchClearVisibility();
+  floorFilter = "all";
+  document.querySelectorAll('.floor-btn').forEach(b => b.classList.toggle('active', b.dataset.floor === 'all'));
+
+  render();
+
+  requestAnimationFrame(() => {
+    const el = document.getElementById('shelf-' + code);
+    if(el){
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.classList.add('flash');
+      setTimeout(() => el.classList.remove('flash'), 1150);
+    }
+  });
+}
+
+buildToc();
+render();
+
+function updateHeaderHeight(){
+  const header = document.querySelector('header');
+  if(header){
+    document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
+  }
+}
+updateHeaderHeight();
+window.addEventListener('resize', updateHeaderHeight);
+window.addEventListener('load', updateHeaderHeight);
+
+const backToTopBtn = document.getElementById('backToTop');
+function updateBackToTopVisibility(){
+  backToTopBtn.classList.toggle('visible', window.scrollY > 400);
+}
+window.addEventListener('scroll', updateBackToTopVisibility, { passive: true });
+updateBackToTopVisibility();
+backToTopBtn.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+</script>
+</body>
+</html>
