@@ -1,3 +1,5 @@
+![Registre de la Bibliothèque Arcanique](./og-image.png)
+
 # Librarian: Tidy Up the Arcane Library — Booklist
 
 Registre interactif (page HTML autonome) pour suivre la progression de rangement de la bibliothèque arcanique : étagères par rayon (rez-de-chaussée / étage), séries à cocher, recherche, filtres par étage, et sauvegarde de la progression dans le navigateur (localStorage).
