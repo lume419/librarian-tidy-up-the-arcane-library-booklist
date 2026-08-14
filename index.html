@@ -533,6 +533,104 @@
   }
   #backToTop:active{ transform: scale(0.94); }
 
+  /* ---------- Reset confirmation modal ---------- */
+  .modal-overlay{
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(19,13,9,0.72);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+  }
+  .modal-overlay.visible{
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .modal{
+    width: 100%;
+    max-width: 380px;
+    background: var(--panel);
+    border-radius: var(--radius);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5), inset 0 0 0 1px var(--panel-shadow);
+    padding: 30px 26px 24px;
+    text-align: center;
+    transform: scale(0.95) translateY(8px);
+    transition: transform .2s ease;
+  }
+  .modal-overlay.visible .modal{
+    transform: scale(1) translateY(0);
+  }
+
+  .modal-seal{
+    width: 42px;
+    height: 42px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ember);
+    color: var(--ember);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  .modal h2{
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 18px;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    margin: 0 0 10px;
+  }
+
+  .modal p{
+    font-family: 'Spectral', serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    margin: 0 0 24px;
+  }
+
+  .modal-actions{
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .modal-btn{
+    flex: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background .15s ease, transform .1s ease;
+  }
+  .modal-btn:active{ transform: scale(0.97); }
+
+  .modal-cancel{
+    background: rgba(42,32,19,0.08);
+    border-color: rgba(42,32,19,0.25);
+    color: var(--ink);
+  }
+  .modal-cancel:hover{ background: rgba(42,32,19,0.16); }
+
+  .modal-confirm{
+    background: var(--ember);
+    border-color: var(--ember);
+    color: #f4e9df;
+  }
+  .modal-confirm:hover{ background: #9c3a29; }
+
   @media (max-width: 560px){
     /* Unwrap the title block so h1 and .subtitle become direct grid items of
        .header-top: h1 spans the full row, then .subtitle and .tally sit as
@@ -596,6 +694,18 @@
 <footer>Progression sauvegardée localement dans ce navigateur · Une étagère devient dorée quand toutes ses séries sont cochées</footer>
 
 <button id="backToTop" aria-label="Remonter en haut de la page" title="Remonter en haut">▲</button>
+
+<div class="modal-overlay" id="resetModalOverlay">
+  <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="resetModalTitle" aria-describedby="resetModalDesc">
+    <div class="modal-seal">✦</div>
+    <h2 id="resetModalTitle">Réinitialiser le registre ?</h2>
+    <p id="resetModalDesc">Toutes les séries cochées seront effacées de la bibliothèque. Cette action est irréversible.</p>
+    <div class="modal-actions">
+      <button type="button" class="modal-btn modal-cancel" id="resetModalCancel">Annuler</button>
+      <button type="button" class="modal-btn modal-confirm" id="resetModalConfirm">Réinitialiser</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const DATA = [
@@ -1297,12 +1407,37 @@ searchClearBtn.addEventListener('click', function(){
 
 updateSearchClearVisibility();
 
-document.getElementById('resetBtn').addEventListener('click', function(){
-  if(confirm("Réinitialiser toute la progression ? Cette action est irréversible.")){
-    state = {};
-    saveState();
-    render();
-  }
+const resetModalOverlay = document.getElementById('resetModalOverlay');
+const resetModalCancel = document.getElementById('resetModalCancel');
+const resetModalConfirm = document.getElementById('resetModalConfirm');
+const resetBtnEl = document.getElementById('resetBtn');
+
+function handleResetModalKeydown(e){
+  if(e.key === 'Escape') closeResetModal();
+}
+
+function openResetModal(){
+  resetModalOverlay.classList.add('visible');
+  resetModalConfirm.focus();
+  document.addEventListener('keydown', handleResetModalKeydown);
+}
+
+function closeResetModal(){
+  resetModalOverlay.classList.remove('visible');
+  document.removeEventListener('keydown', handleResetModalKeydown);
+  resetBtnEl.focus();
+}
+
+resetBtnEl.addEventListener('click', openResetModal);
+resetModalCancel.addEventListener('click', closeResetModal);
+resetModalOverlay.addEventListener('click', function(e){
+  if(e.target === resetModalOverlay) closeResetModal();
+});
+resetModalConfirm.addEventListener('click', function(){
+  state = {};
+  saveState();
+  render();
+  closeResetModal();
 });
 
 function buildToc(){
