@@ -521,9 +521,16 @@
   #backToTop:active{ transform: scale(0.94); }
 
   @media (max-width: 560px){
-    .header-top{ flex-direction: row; align-items:flex-start; }
-    .tally{ text-align:right; }
+    /* Unwrap the title block so h1 and .subtitle become direct grid items of
+       .header-top: h1 spans the full row, then .subtitle and .tally sit as
+       two side-by-side cells on the row below, vertically centered on each other. */
+    .header-top{ display: grid; grid-template-columns: 1fr auto; column-gap: 16px; row-gap: 6px; align-items: center; }
+    .header-top > div:first-child{ display: contents; }
+    h1{ grid-column: 1 / -1; }
+    .subtitle{ grid-column: 1; grid-row: 2; margin-top: 0; }
+    .tally{ grid-column: 2; grid-row: 2; text-align: right; }
     .controls{ flex-direction: column; align-items: stretch; }
+    .search-wrap{ flex: 0 0 auto; }
     .floor-group{ justify-content: space-between; }
   }
 </style>
