@@ -265,6 +265,16 @@
     flex-shrink: 0;
   }
 
+  /* Étagère entièrement cochée : le raccourci reste dans la sidebar mais
+     s'affiche grisé plutôt que d'être retiré. */
+  .toc-item.complete{
+    opacity: 0.45;
+    filter: grayscale(0.7);
+  }
+  .toc-item.complete:hover{
+    opacity: 0.75;
+  }
+
   @keyframes shelfFlash{
     0%   { box-shadow: 0 10px 30px rgba(194,162,77,0.0), inset 0 0 0 1px var(--panel-shadow); }
     25%  { box-shadow: 0 10px 40px rgba(194,162,77,0.55), inset 0 0 0 2px var(--gold-bright); }
@@ -1228,6 +1238,7 @@ function render(){
   }
 
   updateTally();
+  updateTocCompletion();
 }
 
 function updateTally(){
@@ -1304,9 +1315,26 @@ function buildToc(){
     const item = document.createElement('button');
     item.type = 'button';
     item.className = 'toc-item';
+    item.dataset.code = shelf.code;
     item.innerHTML = `<span class="toc-code">${shelf.code}</span><span class="toc-theme">${shelf.theme}</span>`;
     item.addEventListener('click', () => goToShelf(shelf.code));
     (shelf.floor === 1 ? left : right).appendChild(item);
+  });
+
+  updateTocCompletion();
+}
+
+function isShelfComplete(shelf){
+  const total = shelf.series.length;
+  if(total === 0) return false;
+  const done = shelf.series.filter(([title]) => state[seriesKey(shelf.code,title)]).length;
+  return done === total;
+}
+
+function updateTocCompletion(){
+  DATA.forEach(shelf => {
+    const item = document.querySelector('.toc-item[data-code="' + shelf.code + '"]');
+    if(item) item.classList.toggle('complete', isShelfComplete(shelf));
   });
 }
 
