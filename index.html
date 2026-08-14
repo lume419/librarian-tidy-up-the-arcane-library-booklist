@@ -216,6 +216,7 @@
   .btn-icon svg{ display: block; }
 
   .floor-group{ display:flex; gap:6px; }
+  .label-short{ display: none; }
   .floor-btn.active{
     background: var(--verdigris);
     color: #08130f;
@@ -676,6 +677,8 @@
     .search-wrap input{ padding: 8px 30px; font-size: 13px; }
     .floor-group{ flex: 1 1 auto; gap: 6px; }
     .floor-btn{ padding: 7px 10px; font-size: 11px; }
+    .label-full{ display: none; }
+    .label-short{ display: inline; }
 
     .toggle-btn, .reset-btn{
       flex: 0 0 auto;
@@ -711,7 +714,7 @@
     </div>
     <div class="floor-group">
       <button class="floor-btn active" data-floor="all">Tout</button>
-      <button class="floor-btn" data-floor="1">Rez-de-chaussée</button>
+      <button class="floor-btn" data-floor="1"><span class="label-full">Rez-de-chaussée</span><span class="label-short">RDC</span></button>
       <button class="floor-btn" data-floor="2">Étage</button>
     </div>
     <button class="toggle-btn" id="hideToggle" title="Masquer les séries terminées">
