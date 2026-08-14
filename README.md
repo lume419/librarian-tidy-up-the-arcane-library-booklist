@@ -4,7 +4,8 @@ Registre interactif (page HTML autonome) pour suivre la progression de rangement
 
 ## Utilisation
 
-Ouvrez simplement [`index.html`](./index.html) dans un navigateur — aucune installation ni backend requis.
+- **En ligne** : accédez directement au site sur GitHub Pages → https://lume419.github.io/librarian-tidy-up-the-arcane-library-booklist/
+- **En local** : téléchargez ce dépôt et ouvrez simplement [`index.html`](./index.html) dans un navigateur — aucune installation ni backend requis.
 
 ## Fonctionnalités
 
