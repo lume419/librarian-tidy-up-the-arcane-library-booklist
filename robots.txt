@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lume419.github.io/librarian-tidy-up-the-arcane-library-booklist/sitemap.xml
