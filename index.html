@@ -192,6 +192,10 @@
     cursor: pointer;
     transition: background .15s ease, transform .1s ease;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
   }
   .toggle-btn:hover, .floor-btn:hover, .reset-btn:hover{ background: rgba(194,162,77,0.16); }
   .toggle-btn:active, .floor-btn:active, .reset-btn:active{ transform: scale(0.97); }
@@ -200,6 +204,16 @@
     color: #1c1002;
     border-color: var(--gold);
   }
+
+  /* Icon shown alone (mobile, compact buttons) or alongside the label
+     (kept hidden on desktop where the full text label is used instead). */
+  .btn-icon{
+    display: none;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+  }
+  .btn-icon svg{ display: block; }
 
   .floor-group{ display:flex; gap:6px; }
   .floor-btn.active{
@@ -654,9 +668,23 @@
     h1{ grid-column: 1 / -1; }
     .subtitle{ grid-column: 1; grid-row: 2; margin-top: 0; }
     .tally{ grid-column: 2; grid-row: 2; text-align: right; }
-    .controls{ flex-direction: column; align-items: stretch; }
-    .search-wrap{ flex: 0 0 auto; }
-    .floor-group{ justify-content: space-between; }
+    /* Compact controls: search bar on its own row, then the floor filters
+       and the two icon-only buttons (masquer / réinitialiser) share a
+       single, shorter row instead of stacking one control per line. */
+    .controls{ flex-direction: row; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .search-wrap{ flex: 1 1 100%; }
+    .search-wrap input{ padding: 8px 30px; font-size: 13px; }
+    .floor-group{ flex: 1 1 auto; gap: 6px; }
+    .floor-btn{ padding: 7px 10px; font-size: 11px; }
+
+    .toggle-btn, .reset-btn{
+      flex: 0 0 auto;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+    }
+    .toggle-btn .btn-label, .reset-btn .btn-label{ display: none; }
+    .toggle-btn .btn-icon, .reset-btn .btn-icon{ display: inline-flex; }
   }
 </style>
 </head>
@@ -686,8 +714,14 @@
       <button class="floor-btn" data-floor="1">Rez-de-chaussée</button>
       <button class="floor-btn" data-floor="2">Étage</button>
     </div>
-    <button class="toggle-btn" id="hideToggle">Masquer les séries terminées</button>
-    <button class="reset-btn" id="resetBtn">Réinitialiser</button>
+    <button class="toggle-btn" id="hideToggle" title="Masquer les séries terminées">
+      <span class="btn-icon" aria-hidden="true"></span>
+      <span class="btn-label">Masquer les séries terminées</span>
+    </button>
+    <button class="reset-btn" id="resetBtn" title="Réinitialiser">
+      <span class="btn-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+      <span class="btn-label">Réinitialiser</span>
+    </button>
   </div>
 </header>
 
@@ -1380,10 +1414,21 @@ function updateTally(){
   document.getElementById('progressFill').style.width = (done/total*100) + '%';
 }
 
+const ICON_EYE = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+const ICON_EYE_OFF = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+function updateHideToggleButton(){
+  const btn = document.getElementById('hideToggle');
+  const label = hideCompleted ? "Afficher toutes les séries" : "Masquer les séries terminées";
+  btn.title = label;
+  btn.querySelector('.btn-icon').innerHTML = hideCompleted ? ICON_EYE_OFF : ICON_EYE;
+  btn.querySelector('.btn-label').textContent = label;
+}
+
 document.getElementById('hideToggle').addEventListener('click', function(){
   hideCompleted = !hideCompleted;
   this.classList.toggle('active', hideCompleted);
-  this.textContent = hideCompleted ? "Afficher toutes les séries" : "Masquer les séries terminées";
+  updateHideToggleButton();
   saveHidePref();
   render();
 });
@@ -1391,7 +1436,7 @@ document.getElementById('hideToggle').addEventListener('click', function(){
 (function syncHideToggleButton(){
   const btn = document.getElementById('hideToggle');
   btn.classList.toggle('active', hideCompleted);
-  btn.textContent = hideCompleted ? "Afficher toutes les séries" : "Masquer les séries terminées";
+  updateHideToggleButton();
 })();
 
 document.querySelectorAll('.floor-btn').forEach(btn => {
