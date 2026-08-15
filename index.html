@@ -542,6 +542,56 @@
     letter-spacing: 0.06em;
   }
 
+  /* Shown instead of the plain empty-state text once the whole library is
+     100% complete: the site's own seal medallion beside a parchment note,
+     built from the existing design tokens (no external image). */
+  .completion-certificate{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+    padding: 20px 20px 10px;
+  }
+
+  .cert-seal{
+    width: 108px;
+    height: 108px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #2a1c10, #150f09);
+    border: 2px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 40px rgba(194,162,77,0.35), inset 0 0 18px rgba(0,0,0,0.5);
+  }
+  .cert-seal svg{ width: 58%; height: 58%; }
+
+  .cert-note{
+    background: var(--panel);
+    color: var(--ink);
+    border-radius: var(--radius);
+    padding: 22px 28px;
+    max-width: 320px;
+    text-align: left;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.4), inset 0 0 0 1px var(--panel-shadow);
+    transform: rotate(-1deg);
+  }
+  .cert-note-title{
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 16px;
+    letter-spacing: 0.03em;
+    color: var(--ember);
+    margin-bottom: 8px;
+  }
+  .cert-note-body{
+    font-family: 'Spectral', serif;
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+  }
+
   footer{
     text-align:center;
     padding: 24px;
@@ -1417,8 +1467,34 @@ function render(){
 
   if(!anyVisible){
     const empty = document.createElement('div');
-    empty.className = 'empty-state';
-    empty.textContent = searchTerm ? "Aucune série ne correspond à votre recherche." : "Toutes les séries visibles sont terminées. Bibliothèque rangée !";
+    const total = totalSeriesCount();
+    let done = 0;
+    DATA.forEach(shelf => shelf.series.forEach(([title]) => {
+      if(state[seriesKey(shelf.code,title)]) done++;
+    }));
+
+    if(searchTerm){
+      empty.className = 'empty-state';
+      empty.textContent = "Aucune série ne correspond à votre recherche.";
+    } else if(done === total && floorFilter === 'all'){
+      // The entire library (both floors) is 100% done — celebrate with the
+      // site's own seal instead of the plain "everything's hidden" text.
+      empty.className = 'empty-state completion-certificate';
+      empty.innerHTML = `
+        <div class="cert-seal" aria-hidden="true">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50,19 L58.14,41.86 L81,50 L58.14,58.14 L50,81 L41.86,58.14 L19,50 L41.86,41.86 Z" fill="#e4c876"/>
+          </svg>
+        </div>
+        <div class="cert-note">
+          <div class="cert-note-title">Certificat de complétion</div>
+          <div class="cert-note-body">La Bibliothèque Arcanique est rangée</div>
+        </div>
+      `;
+    } else {
+      empty.className = 'empty-state';
+      empty.textContent = "Toutes les séries visibles sont terminées. Bibliothèque rangée !";
+    }
     main.appendChild(empty);
   }
 
