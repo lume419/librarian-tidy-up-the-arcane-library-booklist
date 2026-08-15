@@ -1557,12 +1557,25 @@ function goToShelf(code){
     const el = document.getElementById('shelf-' + code);
     if(!el) return;
 
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
     const triggerFlash = () => {
       el.classList.add('flash');
       setTimeout(() => el.classList.remove('flash'), 1650);
     };
+
+    // Only wait for a scroll if one is actually going to happen — if the
+    // shelf is already sitting where scrollIntoView would place it (e.g.
+    // it's already at the top), 'scrollend' never fires and the flash
+    // must trigger immediately instead of waiting for nothing.
+    const scrollMarginTop = parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
+    const targetScrollY = window.scrollY + el.getBoundingClientRect().top - scrollMarginTop;
+    const needsScroll = Math.abs(targetScrollY - window.scrollY) > 2;
+
+    if(!needsScroll){
+      triggerFlash();
+      return;
+    }
+
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     // Wait for the smooth scroll to actually settle before flashing, so the
     // highlight lands once the shelf is in view instead of fading out
