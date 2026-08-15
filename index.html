@@ -308,11 +308,27 @@
   }
 
   @keyframes shelfFlash{
-    0%   { background: var(--panel); box-shadow: 0 10px 30px rgba(194,162,77,0.0), inset 0 0 0 1px var(--panel-shadow); }
-    12%  { background: #fbf2d9; box-shadow: 0 10px 48px rgba(194,162,77,0.75), inset 0 0 0 2px var(--gold-bright); }
-    100% { background: var(--panel); box-shadow: 0 10px 30px rgba(0,0,0,0.35), inset 0 0 0 1px var(--panel-shadow); }
+    0%   { transform: scale(1); background: var(--panel); box-shadow: 0 10px 30px rgba(194,162,77,0), inset 0 0 0 1px var(--panel-shadow); outline: 3px solid rgba(228,200,118,0); outline-offset: 3px; }
+    12%  { transform: scale(1.02); background: #fbf2d9; box-shadow: 0 18px 60px rgba(194,162,77,0.85), inset 0 0 0 2px var(--gold-bright); outline: 3px solid var(--gold-bright); outline-offset: 3px; }
+    38%  { transform: scale(1.02); background: #fbf2d9; box-shadow: 0 18px 60px rgba(194,162,77,0.85), inset 0 0 0 2px var(--gold-bright); outline: 3px solid var(--gold-bright); outline-offset: 3px; }
+    100% { transform: scale(1); background: var(--panel); box-shadow: 0 10px 30px rgba(0,0,0,0.35), inset 0 0 0 1px var(--panel-shadow); outline: 3px solid rgba(228,200,118,0); outline-offset: 3px; }
   }
-  .shelf.flash{ animation: shelfFlash 1.6s ease; }
+  .shelf.flash{
+    animation: shelfFlash 1.6s ease;
+    position: relative;
+    z-index: 5;
+  }
+
+  /* Frame the (otherwise unchanged, dark) header too, so the whole card —
+     not just its edges — reads as highlighted, without touching its text
+     colors and risking a contrast/readability regression mid-flash. */
+  @keyframes shelfHeadFlash{
+    0%   { box-shadow: inset 0 0 0 0 rgba(228,200,118,0); }
+    12%  { box-shadow: inset 0 0 0 2px var(--gold-bright); }
+    38%  { box-shadow: inset 0 0 0 2px var(--gold-bright); }
+    100% { box-shadow: inset 0 0 0 0 rgba(228,200,118,0); }
+  }
+  .shelf.flash .shelf-head{ animation: shelfHeadFlash 1.6s ease; }
 
   /* Below this width there isn't room for two 200px rails; sidebars fold
      above the content as horizontal wrapping pill rows instead. */
