@@ -1405,11 +1405,11 @@ function render(){
       grid.appendChild(shelfEl);
     });
 
-    if(shelvesForFloor.some(s => {
-      const term = searchTerm.trim().toLowerCase();
-      const matches = s.series.filter(([title]) => !term || title.toLowerCase().includes(term) || s.theme.toLowerCase().includes(term) || s.code.toLowerCase().includes(term));
-      return matches.length > 0;
-    })){
+    // Only show the floor heading when at least one of its shelves is
+    // actually visible — otherwise a fully-completed floor (with "masquer
+    // les séries terminées" on) left an empty heading floating with
+    // nothing rendered underneath it.
+    if(floorHasVisible){
       main.appendChild(heading);
       main.appendChild(grid);
     }
