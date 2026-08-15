@@ -591,6 +591,14 @@
     line-height: 1.45;
     color: var(--ink-soft);
   }
+  .cert-note-plain{
+    text-align: center;
+  }
+  .cert-note-plain .cert-note-body{
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+  }
 
   footer{
     text-align:center;
@@ -1489,6 +1497,20 @@ function render(){
         <div class="cert-note">
           <div class="cert-note-title">Certificat de complétion</div>
           <div class="cert-note-body">La Bibliothèque Arcanique est rangée</div>
+        </div>
+      `;
+    } else if(floorFilter !== 'all'){
+      // This one filtered floor is fully done (library as a whole may not
+      // be) — same seal, but a plain single-line note without the red title.
+      empty.className = 'empty-state completion-certificate';
+      empty.innerHTML = `
+        <div class="cert-seal" aria-hidden="true">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50,19 L58.14,41.86 L81,50 L58.14,58.14 L50,81 L41.86,58.14 L19,50 L41.86,41.86 Z" fill="#e4c876"/>
+          </svg>
+        </div>
+        <div class="cert-note cert-note-plain">
+          <div class="cert-note-body">${floorNames[floorFilter]} complété</div>
         </div>
       `;
     } else {
